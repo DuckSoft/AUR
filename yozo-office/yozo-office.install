@@ -1,0 +1,23 @@
+post_install() {
+  cd /usr/lib/jvm/java-8-openjdk/jre/lib
+  for i in *; do
+      if [ "$i" != "ext" ]; then
+          ln -sf /usr/lib/jvm/java-8-openjdk/jre/lib/$i /opt/Yozosoft/Yozo_Office/Jre/lib/$i
+      fi
+  done
+  echo "------------------- 温馨提示 --------------------"
+  echo "如果您刚才看见大量的 can't translate pathname ~"
+  echo "to UTF-8 报告，不用担心，这不影响安装后软件正常使用。"
+  echo "这是由于原包里的中文文件/目录名未采用标准字符，编码无法"
+  echo "正常转换所致。"
+  echo "祝您使用愉快 ～"
+  post_upgrade
+}
+post_upgrade() {
+  xdg-icon-resource forceupdate --theme hicolor &>/dev/null
+  update-mime-database /usr/share/mime &>/dev/null
+  update-desktop-database -q &>/dev/null
+}
+post_remove() {
+  post_upgrade
+}
