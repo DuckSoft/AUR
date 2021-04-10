@@ -1,0 +1,149 @@
+Author: DuckSoft <realducksoft@gmail.com>
+
+I just cannot stand such a dirty package. 
+Let me do some optimisations.
+
+If you are interested to improve this patch, welcome to mail me.
+
+diff -ru old/tool/ventoy_lib.sh new/tool/ventoy_lib.sh
+--- tool/ventoy_lib.sh	2021-03-06 14:54:04.163817366 +0100
++++ tool/ventoy_lib.sh	2021-03-06 14:56:07.053667242 +0100
+@@ -29,7 +29,7 @@
+ }
+ 
+ vtdebug() {
+-    echo "$*" >> ./log.txt
++    echo "$*" >>/var/log/ventoy.log
+ }
+ 
+ vtoy_gen_uuid() {
+@@ -52,30 +52,6 @@
+ 
+ check_tool_work_ok() {
+     
+-    if echo 1 | hexdump > /dev/null; then
+-        vtdebug "hexdump test ok ..."
+-    else
+-        vtdebug "hexdump test fail ..."
+-        ventoy_false
+-        return
+-    fi
+-   
+-    if mkexfatfs -V > /dev/null; then
+-        vtdebug "mkexfatfs test ok ..."
+-    else
+-        vtdebug "mkexfatfs test fail ..."
+-        ventoy_false
+-        return
+-    fi
+-    
+-    if vtoyfat -T; then
+-        vtdebug "vtoyfat test ok ..."
+-    else
+-        vtdebug "vtoyfat test fail ..."
+-        ventoy_false
+-        return
+-    fi
+-    
+     vtdebug "tool check success ..."
+     ventoy_true
+ }
+@@ -264,7 +240,7 @@
+     else
+     vtdebug "format disk by fdisk ..."
+     
+-fdisk $DISK >>./log.txt 2>&1 <<EOF
++fdisk $DISK >>/var/log/ventoy.log 2>&1 <<EOF
+ o
+ n
+ p
+diff -ru old/tool/VentoyWorker.sh new/tool/VentoyWorker.sh
+--- tool/VentoyWorker.sh	2021-03-06 14:53:26.603866863 +0100
++++ tool/VentoyWorker.sh	2021-03-06 14:55:52.493675465 +0100
+@@ -96,7 +96,7 @@
+ if check_tool_work_ok; then
+     vtdebug "check tool work ok"
+ else
+-    vterr "Some tools can not run on current system. Please check log.txt for details."
++    vterr "Some tools can not run on current system. Please check /var/log/ventoy.log for details."
+     exit 1
+ fi
+ 
+diff -ru old/Ventoy2Disk.sh new/Ventoy2Disk.sh
+--- Ventoy2Disk.sh	2021-03-06 14:52:52.703911700 +0100
++++ Ventoy2Disk.sh	2021-03-06 14:55:45.943684011 +0100
+@@ -32,46 +32,4 @@
+ echo '**********************************************'
+ echo ''
+ 
+-
+-if ! [ -f ./boot/boot.img ]; then
+-    if [ -d ./grub ]; then
+-        echo "Don't run Ventoy2Disk.sh here, please download the released install package, and run the script in it."
+-    else
+-        echo "Please run under the correct directory!" 
+-    fi
+-    exit 1
+-fi
+-
+-echo "############# Ventoy2Disk $* [$TOOLDIR] ################" >> ./log.txt
+-date >> ./log.txt
+-
+-#decompress tool
+-if [ -f ./tool/$TOOLDIR/ash ]; then
+-    echo "no need to decompress tools" >> ./log.txt
+-else
+-    cd ./tool/$TOOLDIR
+-    
+-    [ -f ./xzcat ] && chmod +x ./xzcat
+-    
+-    for file in $(ls *.xz); do
+-        xzcat $file > ${file%.xz}
+-        [ -f ./${file%.xz} ] && chmod +x ./${file%.xz}
+-        [ -f ./$file ] && rm -f ./$file
+-    done
+-    cd ../../
+-    
+-    chmod +x -R ./tool/$TOOLDIR
+-fi
+-
+-if [ -f /bin/bash ]; then
+-    /bin/bash ./tool/VentoyWorker.sh $*
+-else
+-    ash ./tool/VentoyWorker.sh $*
+-fi
+-
+-if [ -n "$OLDDIR" ]; then 
+-    CURDIR=$(pwd)
+-    if [ "$CURDIR" != "$OLDDIR" ]; then
+-        cd "$OLDDIR"
+-    fi
+-fi
++./tool/VentoyWorker.sh $*
+diff -ru old/VentoyWeb.sh new/VentoyWeb.sh
+--- VentoyWeb.sh	2021-03-06 14:54:25.383789486 +0100
++++ VentoyWeb.sh	2021-03-06 14:56:01.253668661 +0100
+@@ -15,12 +15,6 @@
+     echo ""
+ }
+ 
+-uid=$(id -u)
+-if [ $uid -ne 0 ]; then
+-    print_err "Please use sudo or run the script as root."
+-    exit 1
+-fi
+-
+ OLDDIR=$(pwd)
+ 
+ if uname -m | egrep -q 'aarch64|arm64'; then
+@@ -84,8 +78,8 @@
+     exit 1
+ fi
+ 
+-LOGFILE=log.txt
+-#delete the log.txt if it's more than 8MB
++LOGFILE=/var/log/ventoy.log
++#delete the ventoy.log if it's more than 8MB
+ if [ -f $LOGFILE ]; then
+     logsize=$(stat -c '%s' $LOGFILE)
+     if [ $logsize -gt 8388608 ]; then

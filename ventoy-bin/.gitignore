@@ -1,0 +1,12 @@
+# Ignore everything
+*
+
+# But not these files...
+!.gitignore
+!PKGBUILD
+!.SRCINFO
+!ventoy
+!ventoyweb
+!ventoy-persistent
+!sanitize.patch
+!ventoy.install
