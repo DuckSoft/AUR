@@ -1,0 +1,22 @@
+pkgbase = shadowsocks-uri-generator-git
+	pkgver = 20210326.r95.b2ad505
+	pkgrel = 1
+	url = https://github.com/database64128/shadowsocks-uri-generator
+	arch = x86_64
+	license = GPL3
+	makedepends = git
+	makedepends = dotnet-sdk>=5.0
+	options = !strip
+	source = shadowsocks-uri-generator-git::git+https://github.com/database64128/shadowsocks-uri-generator
+	b2sums = SKIP
+
+pkgname = ss-uri-gen-git
+	pkgdesc = CLI for managing federated Shadowsocks servers, automating deployments of Outline servers, and SIP008 online config
+	provides = ss-uri-gen
+	conflicts = ss-uri-gen
+
+pkgname = ss-uri-gen-chatbot-telegram-git
+	pkgdesc = Telegram bot allowing easy user interactions with Shadowsocks URI Generator
+	provides = ss-uri-gen-chatbot-telegram
+	conflicts = ss-uri-gen-chatbot-telegram
+
