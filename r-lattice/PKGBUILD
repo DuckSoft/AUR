@@ -1,3 +1,5 @@
+# Maintainer: DuckSoft <realducksoft at gmail dot com>
+# Contributor: Grey Christoforo <first name at last name dot net>
 _cranname=lattice
 _cranver=0.20-44
 pkgname=r-${_cranname,,}
